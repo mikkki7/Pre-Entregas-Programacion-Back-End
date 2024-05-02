@@ -49,8 +49,8 @@ const cartsManager = {
             let quantity = req.body.quantity || 1;
         
             let cartId = Number(req.params.cid);
-            let cart = carts.find( cart => cart.id === cartId);
             let carts = JSON.parse(fs.readFileSync(cartFilePath, "UTF-8"));
+            let cart = carts.find( cart => cart.id === cartId);
 
             if (!cart) {
                 return res.status(404).json({ error: "Carrito no encontrado" });
