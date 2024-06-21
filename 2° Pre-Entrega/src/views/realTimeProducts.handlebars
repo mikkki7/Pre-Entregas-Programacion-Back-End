@@ -1,0 +1,128 @@
+<div>
+    <h1>Productos</h1>
+    <div id="contenedor-formularios">
+        <div>
+            <form id="new-product" action="/realtimeproducts" method="post">
+                <h2>Añadir producto:</h2>
+                <div>
+                    <label for="title">Titulo:</label>
+                    <input type="text" name="title" id="title">
+                </div>
+                <div>
+                    <label for="description">Descripcion:</label>
+                    <input type="text" class="formControl" name="description" id="description">
+                </div>
+                <div>
+                    <label for="code">Codigo:</label>
+                    <input type="text" class="formControl" name="code" id="code">
+                </div>
+                <div>
+                    <label for="price">Precio:</label>
+                    <input type="number" class="formControl" name="price" id="price">
+                </div>
+                <div>
+                    <label for="status">Estado:</label>
+                    <select class="formControl" name="status" id="status">
+                        <option value="true">Verdadero</option>
+                        <option value="false">Falso</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="stock">Stock:</label>
+                    <input type="number" class="formControl" name="stock" id="stock">
+                </div>
+                <div>
+                    <label for="category">Categoria:</label>
+                    <input type="text" class="formControl" name="category" id="category">
+                </div>
+                <div>
+                    <label for="thumbnail">Miniatura:</label>
+                    <input type="text" class="formControl" name="thumbnail" id="thumbnail">
+                </div>
+                <button type="submit">Añadir</button>
+            </form>
+        </div>
+        <div>
+            <form id="delete-product">
+                <h2>Borrar producto</h2>
+                <div>
+                    <label for="id">Id</label>
+                    <input type="text" class="formControl" name="id" id="id">
+                </div>
+                <button type="submit">Borrar</button>
+            </form>
+        </div>
+    </div>
+    <div class="container" id="container"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const socket = io();
+
+        socket.on("products", products => {
+            let containerProducts = document.getElementById("contenedor-formularios");
+
+            if (!containerProducts) {
+                console.error("No se ha encontrado el elemento con ID: containerProducts")
+                return;
+            }
+
+            products.forEach((product) => {
+                containerProducts.innerHTML += `
+                    <ul>
+                        <il>ID: ${product.id}</il>
+                        <il>Titulo: ${product.title}</il>
+                        <il>Descripcion: ${product.description}</il>
+                        <il>Codigo: ${product.code}</il>
+                        <il>Precio: ${product.price}</il>
+                        <il>Estado: ${product.status}</il>
+                        <il>Stock: ${product.stock}</il>
+                        <il>Categoria: ${product.category}</il>
+                        il>Imagen: ${product.thumbnail}</il>
+                    </ul>
+                `;
+            });
+        });
+
+        document.getElementById("new-product").addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            socket.emit("new-product", {
+                title: document.getElementById("title").value,
+                description: document.getElementById("description").value,
+                code: document.getElementById("code").value,
+                price: document.getElementById("price").value,
+                status: document.getElementById("status").value,
+                stock: document.getElementById("stock").value,
+                category: document.getElementById("category").value,
+                thumbnail: document.getElementById("thumbnail").value
+            });
+
+            event.target.reset();
+        });
+
+        document.getElementById("delete-product").addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const productId = document.getElementById("id").value;
+            
+            console.log(productId);
+
+            socket.emit("delete-product", productId);
+
+            event.target.reset();
+        });
+
+        socket.on("response", (response) => {
+            const container = document.getElementById("container");
+            if (response.status === "success") {
+                container.innerHTML = `<p class="exito">${response.message}</p>`;
+            } else {
+                container.innerHTML = `<p class="error">${response.message}</p>`;
+            }
+        });
+
+    });
+</script>

@@ -1,0 +1,70 @@
+<div>
+    <h1>Chat</h1>
+
+    <div>
+        <input type="text" id="box-chat" placeholder="Ingresar mensaje">
+
+        <br /><br />
+
+        <button id="sendButton">Enviar Mensaje</button>
+    </div>
+
+    <div>
+        <p id="list-chat"></p>
+    </div>
+</div>
+
+<script src="../sockets.js"/></script>
+<script type="module">
+    const serverAdress = "ws://localhost:5050"
+    const socketClient = io(serverAdress);
+    const boxChat = document.getElementById("box-chat");
+    const listChat = document.getElementById("list-chat");
+    const sendButton = document.getElementById("sendButton");
+    let user;
+
+    socketClient.on("newClientConnected", data => {
+        console.log(data);
+    });
+
+    socketClient.on("logChat", data => {
+        for (let i = 0; i < data.length; i++) {
+            listChat.innerHTML += `<br />[${data[i].user}] : ${data[i].message}`;
+        }
+    })
+
+    socketClient.on("messageArrived", data => {
+        listChat.innerHTML += `<br />[${data.user}] : ${data.message}`;
+    });
+
+    const sendMessage = () => {
+        if (boxChat.value !== "") {
+            socketClient.emit("newMessage", { user: user, message: boxChat.value });
+            boxChat.value = "";
+        }
+    }
+
+    const askForUser = async () => {
+        const result = await Swal.fire({
+            title: "Hola",
+            input: "text",
+            text: "Ingrese su nombre de usuario",
+            inputValidator: value => { return !value && "Se debe ingresar el nombre de usuario" },
+            icon: "success",
+            allowOutsideClick: false
+        });
+
+        user = result.value;
+        console.log(user);
+    }
+
+    boxChat.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") sendMessage()
+    });
+
+    sendButton.addEventListener("click", (e) => {
+        sendMessage();
+    });
+
+    await askForUser();
+</script>

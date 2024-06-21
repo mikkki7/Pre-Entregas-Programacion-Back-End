@@ -1,0 +1,61 @@
+<div>    
+    <div>
+        <h1>Lista de productos:</h1>
+        <button class="viewCartBTN" id="viewCart" onclick="viewCart()">Ver carrito</button>
+        {{#each products}}
+            <div>
+                <ul>
+                    <img src="/static/img/{{thumbnail}}" alt="{{title}}">
+                    <li><button class="addToCartBTN" id="addToCart" onclick="addProductToCart(`{{id}}`)">Agregar al carrito</button></li>
+                    <li>{{title}}</li>
+                    <li>{{description}}</li>
+                    <li>${{price}}</li>
+                    <li>Categoria: {{category}}</li>
+                    <li>Quedan {{stock}} unidades</li>
+                    <li>Codigo: {{code}}</li>
+                    <li>Estado: {{status}}</li>
+                </ul>
+            </div>
+        {{/each}}
+    </div>
+    <div class="pagination">
+        {{#if products.hasPrevPage}}
+            <a href={{products.prevLink}}></a>
+        {{/if}}
+
+        <p>{{products.page}} de {{products.totalPages}}</p>
+
+        {{#if products.hasNextPage}}
+            <a href={{products.nextLink}}></a>
+        {{/if}}
+    </div>
+</div>
+
+<script>
+    function addProductToCart(productId) {
+        try {
+            const response = fetch(`/carts/.../products/${productId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ quantity: 1 });
+            });
+
+            const data = response.json();
+            if (data.status === "success") {
+                alert(`Producto con id ${productId} agregado exitosamente al carro`);
+            }
+        } catch (error) {
+            alert(error.message || `Error al agregar el producto con ID ${productId} al carrito`);
+        }
+    }
+
+    function viewCart() {
+        try {
+            window.location.href = "/carts/"
+        } catch (error) {
+            alert(error.message || "Error al mostrar el carrito");
+        }
+    };
+</script>
